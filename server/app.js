@@ -1,27 +1,19 @@
 const express = require('express');
-const http = require('http');
+const { createServer } = require('node:http');
+const { join } = require('node:path');
 const { Server } = require('socket.io');
+require('dotenv').config();
+
 const app = express();
-const server = http.createServer(app);
-const path = require('path');
+const server = createServer(app);
+const io = new Server(server);
 
-const io = new Server(server); 
-
-app.use("/", express.static(path.join(__dirname, "/public")));
-
-const PORT = process.env.PORT || 3001;
+app.use(express.static(join(__dirname, '..', 'public')));
 
 io.on('connection', (socket) => {
-  socket.on('join_room', (roomId) => {
-    socket.join(roomId);
-  })
-
-  socket.on("disconnect", () => {
-    console.log("User Disconnected", socket.id);
-  });
+  console.log('a user connected')
 });
 
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+server.listen(process.env.PORT, () => {
+  console.log('server running at http://localhost:3000');
 });
-
