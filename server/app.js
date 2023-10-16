@@ -11,7 +11,21 @@ const io = new Server(server);
 app.use(express.static(join(__dirname, '..', 'public')));
 
 io.on('connection', (socket) => {
-  console.log('a user connected')
+  console.log('A user connected');
+
+  socket.on('join_room', ({ username, roomId }) => {
+    socket.join(roomId);
+    console.log(`User ${username} joined room: ${roomId}`);
+    socket.username = username;
+  });
+
+  socket.on('chat message', ({ message, roomId }) => {
+    io.to(roomId).emit('chat message', { username: socket.username, message: message });
+  });
+
+  socket.on('disconnect', () => {
+    console.log('A user disconnected');
+  });
 });
 
 server.listen(process.env.PORT, () => {
