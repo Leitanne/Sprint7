@@ -5,24 +5,20 @@ import { Server as SocketIO } from 'socket.io';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { Document } from 'mongoose';
+import Message from './Ports/message';
 
-// Define the schema for the "Message" model.
 interface IMessage extends Document {
   username: string;
   text: string;
   roomId: string;
 }
 
-// Import the Message model from './Ports/message'
-import Message from './Ports/message';
-
-dotenv.config();
-const db = mongoose.connection;
-
-// Configuration
+// Configuracion
 const app = express();
 const server = http.createServer(app);
 const io = new SocketIO(server);
+dotenv.config();
+const db = mongoose.connection;
 mongoose.connect(process.env.URI + '/' + process.env.DATABASE);
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
@@ -30,7 +26,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 io.on('connection', (socket) => {
   socket.on('join_room', ({ username, roomId }: { username: string, roomId: string }) => {
     socket.join(roomId);
-    (socket as any).username = username; // Use 'as any' to attach 'username' property to the socket.
+    (socket as any).username = username; //Se usa como any para poder ponerle el username
     io.to(roomId).emit('user_connected', `${username} se ha unido a la sala.`);
   });
 
@@ -45,7 +41,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('chat message', ({ message, roomId }: { message: string, roomId: string }) => {
-    const username = (socket as any).username; // Use 'as any' to retrieve 'username'.
+    const username = (socket as any).username; 
     if (username) {
       const newMessage = new Message({
         username: username,
@@ -70,7 +66,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// Persistence
+// Persistencia
 db.on('error', console.error.bind(console, 'Error de conexión a MongoDB:'));
 db.once('open', () => {
   console.log('Conectado a MongoDB');
